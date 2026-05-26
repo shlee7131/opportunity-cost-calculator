@@ -25,7 +25,7 @@ const ITEMS = [
 
   // 구독 · 엔터
   { id: "netflix",   name: "넷플릭스 광고형 멤버십",     price: 233,    unit: "일",   emoji: "🎬", description: "월 7,000원 ÷ 30일 ≈ 233원/일",        category: "subscription" },
-  { id: "youtube",   name: "유튜브 프리미엄",            price: 283,    unit: "일",   emoji: "📺", description: "월 8,500원 ÷ 30일 ≈ 283원/일",        category: "subscription" },
+  { id: "youtube",   name: "유튜브 프리미엄",            price: 497,    unit: "일",   emoji: "📺", description: "월 14,900원 ÷ 30일 ≈ 497원/일",      category: "subscription" },
   { id: "lotto",     name: "로또 1장",                  price: 1000,   unit: "장",   emoji: "🎰", description: "매주 토요일 추첨",                     category: "lifestyle"    },
 
   // 교통 · 여행

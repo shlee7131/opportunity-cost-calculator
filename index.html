@@ -375,16 +375,13 @@
       }
     });
 
-    // Comma formatting on input
+    // Comma formatting on input — cursor always moves to end to avoid mid-string insertion bugs
     amountInput.addEventListener('input', () => {
       const raw = amountInput.value.replace(/[^\d]/g, '');
       if (raw === '') { amountInput.value = ''; return; }
-      const pos = amountInput.selectionStart;
-      const prevLen = amountInput.value.length;
-      const formatted = Number(raw).toLocaleString('ko-KR');
-      amountInput.value = formatted;
-      const delta = formatted.length - prevLen;
-      amountInput.setSelectionRange(pos + delta, pos + delta);
+      amountInput.value = Number(raw).toLocaleString('ko-KR');
+      const len = amountInput.value.length;
+      amountInput.setSelectionRange(len, len);
     });
 
     // Preset buttons

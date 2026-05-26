@@ -1,47 +1,92 @@
 # 오늘 커피값으로 뭘 살 수 있었을까? — 소비 기회비용 계산기
 
-금액을 입력하면 그 돈으로 살 수 있는 것들을 6개 카테고리(주식·원자재·생활비·구독·여행·기타)로 카드 형태로 시각화해 소비의 기회비용을 새로운 관점으로 보여주는 웹 도구.
+금액을 입력하면 그 돈으로 살 수 있는 것들을 21개 카테고리(주식·원자재·카페·음식·구독·교통 등)에서 랜덤 6개를 골라 카드로 시각화해, 소비의 기회비용을 새로운 관점으로 보여주는 웹 도구.
+
+**[라이브 데모]** https://opportunity-cost-calculator-dusky.vercel.app
 
 ---
 
-## 사용된 스킬 및 에이전트 구성
+## 기술 스택
 
-| 역할 | 에이전트 / 스킬 |
-|------|----------------|
-| 기획 · PRD 작성 | `document-skills:frontend-design` 스킬 |
-| UI 구현 (HTML/CSS) | `frontend-developer` 에이전트 |
-| 데이터 · 로직 구현 (JS) | `backend-developer` 에이전트 |
-| 코드 리뷰 | `code-reviewer` 에이전트 |
-| 통합 테스트 | `integration-tester` 에이전트 |
+| 구분 | 내용 |
+|------|------|
+| 언어 | HTML5 · CSS3 · Vanilla JavaScript (ES Modules) |
+| 빌드 도구 | 없음 (정적 파일 그대로 서빙) |
+| 데이터 저장 | `localStorage` |
+| 배포 | Vercel (정적 호스팅) |
 
 ---
 
-## localStorage 활용 내용
+## 파일 구조
 
-- **히스토리 저장**: 사용자가 계산한 금액과 타임스탬프를 `opportunityCostHistory` 키로 저장 (최대 10건 유지)
-- **재방문 시 자동 로드**: 페이지 진입 시 저장된 히스토리를 불러와 사이드바에 표시
-- **히스토리 삭제**: 전체 초기화 버튼으로 `localStorage` 항목 완전 제거
+```
+.
+├── index.html          # UI 및 인라인 모듈 스크립트 (메인 진입점)
+├── style.css           # 전체 스타일 (다크 테마, 반응형 그리드)
+├── data.js             # 비교 아이템 21종 데이터 (가격·단위·이모지·카테고리)
+├── calculator.js       # 계산 로직 + localStorage 히스토리 관리
+├── vercel.json         # Vercel 정적 배포 설정
+├── PRD.md              # 기획 요구사항 문서
+├── REVIEW.md           # 코드 리뷰 결과
+└── TEST_REPORT.md      # 통합 테스트 결과
+```
+
+---
+
+## 주요 기능
+
+- **기회비용 계산**: 금액 입력 → 21개 풀에서 랜덤 6개 카드 표시
+- **콤마 포맷팅**: 입력 중 세 자리마다 자동 콤마 삽입 (예: `50,000`)
+- **프리셋 버튼**: 4,500 / 6,000 / 10,000 / 50,000원 빠른 선택
+- **카운트업 애니메이션**: 결과 숫자가 0에서 올라오는 효과
+- **공유 링크**: URL 파라미터(`?amount=N`)로 특정 금액 결과 공유
+- **히스토리**: 최근 5건 localStorage 저장, 재클릭 시 즉시 재계산
+
+---
+
+## localStorage 활용
+
+| 키 | 내용 |
+|----|------|
+| `occ_history` | 계산한 금액·타임스탬프 배열 (최대 5건, 최신순 정렬) |
+
+재방문 시 히스토리를 자동 로드해 이전 계산을 빠르게 재실행할 수 있습니다. 히스토리 초기화 버튼으로 완전 삭제 가능.
+
+---
+
+## 사용된 에이전트 구성
+
+| 역할 | 에이전트 |
+|------|----------|
+| UI 구현 (HTML/CSS) | `frontend-developer` |
+| 데이터·로직 구현 (JS) | `backend-developer` |
+| 코드 리뷰 | `code-reviewer` |
+| 통합 테스트 | `integration-tester` |
+| 가격 데이터 최신화 | `price-updater` |
 
 ---
 
 ## 로컬 실행 방법
 
-별도 빌드 없이 정적 파일로 동작합니다.  
-ES Module(`import`/`export`) 사용으로 **로컬 파일 직접 열기(file://)는 불가**하며, 간단한 HTTP 서버가 필요합니다.
+ES Module(`import`/`export`) 사용으로 파일을 직접 열면(`file://`) 동작하지 않습니다.
+간단한 HTTP 서버가 필요합니다.
 
 ```bash
-# Node.js가 설치된 경우
+# Node.js npx (별도 설치 불필요)
 npx serve .
 
-# Python 3이 설치된 경우
-python -m http.server 8080
+# Node.js http-server
+npx http-server . -p 8080
 ```
 
-브라우저에서 `http://localhost:8080` (또는 `http://localhost:3000`) 접속.
+브라우저에서 `http://localhost:3000` (또는 표시된 포트) 접속.
 
 ---
 
-## 배포 링크
+## 가격 데이터 최신화
 
-> [배포 후 Vercel URL로 교체하세요]  
-> `https://<your-project>.vercel.app`
+비교 아이템 가격은 `data.js`에서 관리합니다. 주기적 업데이트가 필요할 경우 `price-updater` 에이전트를 실행하세요.
+
+```
+현재 기준일: 2026-05-27
+```
