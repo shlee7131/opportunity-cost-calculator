@@ -22,7 +22,9 @@
   --color-surface-2:  #1E2421;
   --color-accent-dim: rgba(198, 241, 53, 0.12);
   --color-accent-glow: rgba(198, 241, 53, 0.35);
+  --color-accent-hover: #d4ff44;
   --color-accent2-dim: rgba(255, 77, 28, 0.12);
+  --color-error:      #ff6b5b;
 
   --radius-sm:  6px;
   --radius-md:  12px;
@@ -328,7 +330,7 @@ body > * {
 }
 
 .calculate-btn:hover {
-  background: #d4ff44;
+  background: var(--color-accent-hover);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px var(--color-accent-glow);
 }
@@ -340,7 +342,7 @@ body > * {
 /* Error message */
 .error-message {
   font-size: 13px;
-  color: #ff6b5b;
+  color: var(--color-error);
   background: rgba(255, 77, 28, 0.1);
   border: 1px solid rgba(255, 77, 28, 0.3);
   border-radius: var(--radius-sm);
@@ -442,7 +444,7 @@ body > * {
 /* Result grid */
 .result-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
 
@@ -817,7 +819,7 @@ footer {
 /* 1200px+ — max width lock */
 @media (min-width: 1200px) {
   .result-grid {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }
 
@@ -829,6 +831,19 @@ footer {
 
   .page-wrapper {
     max-width: 1320px;
+  }
+}
+
+/* ============================================================
+   Accessibility — Reduced Motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
