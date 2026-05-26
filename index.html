@@ -58,6 +58,7 @@
                 placeholder="0"
                 autocomplete="off"
                 inputmode="numeric"
+                maxlength="13"
                 aria-label="금액을 입력하세요 (원)"
               />
             </div>
@@ -162,7 +163,6 @@
     const resultAmountDisp  = document.getElementById('result-amount-display');
     const errorMsg          = document.getElementById('error-msg');
     const historyList       = document.getElementById('history-list');
-    const historyEmpty      = document.getElementById('history-empty');
     const clearHistoryBtn   = document.getElementById('clear-history-btn');
     const shareBtn          = document.getElementById('share-btn');
 
@@ -286,7 +286,7 @@
     function renderHistory() {
       const history = loadHistory();
 
-      // Clear current tags (but keep historyEmpty reference)
+      // Clear current tags
       historyList.innerHTML = '';
 
       if (history.length === 0) {
@@ -325,15 +325,19 @@
     /* --------------------------------------------------------
        Share link
        -------------------------------------------------------- */
+    function setShareBtnCopied() {
+      const original = shareBtn.textContent;
+      shareBtn.textContent = '✅ 복사 완료!';
+      setTimeout(() => { shareBtn.textContent = original; }, 2000);
+    }
+
     function copyShareLink(amount) {
       const url = new URL(window.location.href);
       url.searchParams.set('amount', amount);
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url.toString()).then(() => {
-          const original = shareBtn.textContent;
-          shareBtn.textContent = '✅ 복사 완료!';
-          setTimeout(() => { shareBtn.textContent = original; }, 2000);
+          setShareBtnCopied();
         }).catch(() => {
           fallbackCopy(url.toString());
         });
@@ -351,9 +355,7 @@
       ta.select();
       try {
         document.execCommand('copy');
-        const original = shareBtn.textContent;
-        shareBtn.textContent = '✅ 복사 완료!';
-        setTimeout(() => { shareBtn.textContent = original; }, 2000);
+        setShareBtnCopied();
       } catch (_) { /* silent */ }
       document.body.removeChild(ta);
     }
