@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>오늘 커피값으로 뭘 살 수 있었을까? — 소비 기회비용 계산기</title>
+
+  <!-- Google Fonts: Space Grotesk (display) + Noto Sans KR (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ======================================================
+       Header
+       ====================================================== -->
+  <header class="site-header">
+    <div class="page-wrapper">
+      <div class="header-left">
+        <h1 class="site-title">오늘 커피값으로<br /><span>뭘 살 수 있었을까?</span></h1>
+        <p class="site-tagline">소비의 기회비용을 다른 눈으로 바라보세요</p>
+        <div class="header-accent-line" aria-hidden="true"></div>
+      </div>
+      <div class="header-right">
+        <button class="share-btn" id="share-btn" type="button">
+          🔗 공유 링크 복사
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================
+       Main
+       ====================================================== -->
+  <main>
+
+    <!-- Input Section -->
+    <section class="input-section" aria-label="금액 입력">
+      <div class="page-wrapper">
+
+        <div class="input-main">
+          <div>
+            <label for="amount-input">
+              <span class="amount-label-text">얼마를 썼나요?</span>
+            </label>
+            <div class="amount-input-wrapper">
+              <span class="amount-currency" aria-hidden="true">₩</span>
+              <input
+                type="number"
+                id="amount-input"
+                name="amount"
+                placeholder="0"
+                min="1"
+                autocomplete="off"
+                inputmode="numeric"
+                aria-label="금액을 입력하세요 (원)"
+              />
+            </div>
+            <p class="error-message" id="error-msg" role="alert" hidden></p>
+          </div>
+
+          <!-- Preset Buttons -->
+          <div class="preset-group" role="group" aria-label="빠른 금액 선택">
+            <button class="preset-btn" type="button" data-amount="4500">4,500원</button>
+            <button class="preset-btn" type="button" data-amount="6000">6,000원</button>
+            <button class="preset-btn" type="button" data-amount="10000">10,000원</button>
+            <button class="preset-btn" type="button" data-amount="50000">50,000원</button>
+          </div>
+
+          <!-- Calculate Button -->
+          <button class="calculate-btn" id="calculate-btn" type="button">
+            계산하기 →
+          </button>
+        </div>
+
+        <!-- Side panel — asymmetric layout element -->
+        <aside class="input-side" aria-label="비교 항목 수">
+          <span class="input-side-label">비교 항목</span>
+          <span class="input-side-value">8</span>
+        </aside>
+
+      </div>
+    </section>
+
+    <hr class="section-divider" aria-hidden="true" />
+
+    <!-- Result Section -->
+    <section class="result-section" aria-label="계산 결과" aria-live="polite">
+      <div class="page-wrapper">
+        <div class="result-header" id="result-header" hidden>
+          <span class="result-title">기회비용 분석</span>
+          <span class="result-amount-display" id="result-amount-display"></span>
+        </div>
+        <p class="empty-state" id="empty-state">금액을 입력하면 결과가 표시됩니다</p>
+        <div class="result-grid" id="result-grid" hidden></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================
+       Footer — History
+       ====================================================== -->
+  <footer>
+    <section class="history-section" aria-label="최근 계산 내역">
+      <div class="page-wrapper">
+        <div class="history-header">
+          <h2 class="history-title">최근 계산 내역</h2>
+          <button class="clear-history-btn" id="clear-history-btn" type="button">
+            초기화
+          </button>
+        </div>
+        <div class="history-list" id="history-list" role="list" aria-label="히스토리 태그 목록">
+          <p class="history-empty" id="history-empty">최근 계산 내역이 없습니다</p>
+        </div>
+      </div>
+    </section>
+  </footer>
+
+  <!-- ======================================================
+       Inline Module Script
+       ====================================================== -->
+  <script type="module">
+    import ITEMS from './data.js';
+    import { calculate, saveHistory, loadHistory, clearHistory } from './calculator.js';
+
+    /* --------------------------------------------------------
+       Utility: format number with comma separators
+       -------------------------------------------------------- */
+    function formatNumber(value) {
+      return Number(value).toLocaleString('ko-KR');
+    }
+
+    /* --------------------------------------------------------
+       DOM references
+       -------------------------------------------------------- */
+    const amountInput       = document.getElementById('amount-input');
+    const calculateBtn      = document.getElementById('calculate-btn');
+    const resultGrid        = document.getElementById('result-grid');
+    const emptyState        = document.getElementById('empty-state');
+    const resultHeader      = document.getElementById('result-header');
+    const resultAmountDisp  = document.getElementById('result-amount-display');
+    const errorMsg          = document.getElementById('error-msg');
+    const historyList       = document.getElementById('history-list');
+    const historyEmpty      = document.getElementById('history-empty');
+    const clearHistoryBtn   = document.getElementById('clear-history-btn');
+    const shareBtn          = document.getElementById('share-btn');
+
+    /* --------------------------------------------------------
+       Show / hide error
+       -------------------------------------------------------- */
+    function showError(message) {
+      errorMsg.textContent = message;
+      errorMsg.removeAttribute('hidden');
+    }
+
+    function hideError() {
+      errorMsg.setAttribute('hidden', '');
+      errorMsg.textContent = '';
+    }
+
+    /* --------------------------------------------------------
+       Count-up animation (requestAnimationFrame, 600ms easeOut)
+       -------------------------------------------------------- */
+    function animateNumber(el, target, decimals) {
+      const duration = 600;
+      const start = performance.now();
+
+      function tick(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // easeOut cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = eased * target;
+
+        el.textContent = current.toLocaleString('ko-KR', {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    /* --------------------------------------------------------
+       Render result cards
+       -------------------------------------------------------- */
+    function renderCards(results) {
+      resultGrid.innerHTML = '';
+
+      results.forEach((item, index) => {
+        const delay = (index * 0.06).toFixed(2) + 's';
+
+        const article = document.createElement('article');
+        article.className = 'result-card' + (item.canBuy ? '' : ' cannot-buy');
+        article.style.setProperty('--card-delay', delay);
+
+        const badgeClass = item.canBuy ? 'can-buy'      : 'cannot-buy-badge';
+        const badgeLabel = item.canBuy ? '살 수 있어요' : '살 수 없어요';
+
+        // 소수점 자릿수: 정수면 0자리, 아니면 1자리 (PRD 섹션 7: 소수점 첫째 자리까지)
+        const decimals = Number.isInteger(item.quantity) ? 0 : 1;
+
+        // cannot-buy 카드: 수량 대신 "—" 표시로 0 혼동 방지
+        const qtyInitial = item.canBuy ? '0' : '—';
+
+        article.innerHTML = `
+          <div class="card-emoji" aria-hidden="true">${item.emoji}</div>
+          <div class="card-body">
+            <h3 class="card-name">${item.name}</h3>
+            <p class="card-quantity">
+              <span class="qty-number">${qtyInitial}</span><span class="card-unit">${item.canBuy ? item.unit : ''}</span>
+            </p>
+            <p class="card-description">${item.description}</p>
+            <p class="card-price">1${item.unit} = ${formatNumber(item.price)}원</p>
+          </div>
+          <div class="card-badge ${badgeClass}" role="status">${badgeLabel}</div>
+        `;
+
+        resultGrid.appendChild(article);
+
+        // 카드가 DOM에 추가된 후 카운트업 실행 (canBuy인 경우만)
+        if (item.canBuy) {
+          const qtyEl = article.querySelector('.qty-number');
+          // staggered 딜레이만큼 기다린 후 카운트업 시작
+          const delayMs = index * 60;
+          setTimeout(() => animateNumber(qtyEl, item.quantity, decimals), delayMs);
+        }
+      });
+    }
+
+    /* --------------------------------------------------------
+       Run calculation
+       -------------------------------------------------------- */
+    function runCalculation(amount) {
+      hideError();
+
+      try {
+        const results = calculate(amount, ITEMS);
+
+        // Show grid, hide empty state
+        emptyState.setAttribute('hidden', '');
+        resultGrid.removeAttribute('hidden');
+        resultHeader.removeAttribute('hidden');
+        resultAmountDisp.textContent = formatNumber(amount) + '원';
+
+        renderCards(results);
+        saveHistory(amount);
+        renderHistory();
+
+        // Scroll to results smoothly on mobile
+        if (window.innerWidth < 768) {
+          resultGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    /* --------------------------------------------------------
+       Render history tags
+       -------------------------------------------------------- */
+    function renderHistory() {
+      const history = loadHistory();
+
+      // Clear current tags (but keep historyEmpty reference)
+      historyList.innerHTML = '';
+
+      if (history.length === 0) {
+        const p = document.createElement('p');
+        p.className = 'history-empty';
+        p.id = 'history-empty';
+        p.textContent = '최근 계산 내역이 없습니다';
+        historyList.appendChild(p);
+        return;
+      }
+
+      history.forEach((entry) => {
+        const btn = document.createElement('button');
+        btn.className = 'history-tag';
+        btn.setAttribute('type', 'button');
+        btn.setAttribute('data-amount', entry.amount);
+        btn.setAttribute('role', 'listitem');
+        btn.setAttribute('aria-label', `${formatNumber(entry.amount)}원으로 재계산`);
+        btn.textContent = formatNumber(entry.amount) + '원';
+
+        // Mark active if matches current input
+        const currentVal = Number(amountInput.value);
+        if (currentVal === entry.amount) {
+          btn.classList.add('active');
+        }
+
+        btn.addEventListener('click', () => {
+          amountInput.value = entry.amount;
+          runCalculation(entry.amount);
+        });
+
+        historyList.appendChild(btn);
+      });
+    }
+
+    /* --------------------------------------------------------
+       Share link
+       -------------------------------------------------------- */
+    function copyShareLink(amount) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('amount', amount);
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url.toString()).then(() => {
+          const original = shareBtn.textContent;
+          shareBtn.textContent = '✅ 복사 완료!';
+          setTimeout(() => { shareBtn.textContent = original; }, 2000);
+        }).catch(() => {
+          fallbackCopy(url.toString());
+        });
+      } else {
+        fallbackCopy(url.toString());
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+        const original = shareBtn.textContent;
+        shareBtn.textContent = '✅ 복사 완료!';
+        setTimeout(() => { shareBtn.textContent = original; }, 2000);
+      } catch (_) { /* silent */ }
+      document.body.removeChild(ta);
+    }
+
+    /* --------------------------------------------------------
+       Event Listeners
+       -------------------------------------------------------- */
+
+    // Calculate button
+    calculateBtn.addEventListener('click', () => {
+      const amount = amountInput.value;
+      runCalculation(amount);
+    });
+
+    // Enter key in input
+    amountInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        calculateBtn.click();
+      }
+    });
+
+    // Preset buttons
+    document.querySelectorAll('.preset-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const amount = Number(btn.dataset.amount);
+        amountInput.value = amount;
+        runCalculation(amount);
+      });
+    });
+
+    // Clear history
+    clearHistoryBtn.addEventListener('click', () => {
+      clearHistory();
+      renderHistory();
+    });
+
+    // Share button
+    shareBtn.addEventListener('click', () => {
+      const amount = amountInput.value;
+      if (!amount || Number(amount) <= 0) {
+        showError('공유하려면 먼저 금액을 입력해주세요.');
+        return;
+      }
+      copyShareLink(Number(amount));
+    });
+
+    /* --------------------------------------------------------
+       Initialisation — DOMContentLoaded equivalent
+       (script is at bottom of body so DOM is ready)
+       -------------------------------------------------------- */
+
+    // Load history on page start
+    renderHistory();
+
+    // Handle URL ?amount= parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlAmount = urlParams.get('amount');
+    if (urlAmount) {
+      const parsed = Number(urlAmount);
+      if (!isNaN(parsed) && parsed > 0) {
+        amountInput.value = parsed;
+        runCalculation(parsed);
+      }
+    }
+
+  </script>
+
+</body>
+</html>
