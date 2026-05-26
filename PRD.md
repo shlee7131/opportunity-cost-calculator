@@ -81,7 +81,7 @@
 ├── PRD.md                      # 이 문서
 └── .claude/
     └── skills/
-        └── frontend-design.md  # 디자인 스킬 가이드
+        └── front-design-guideline.md  # 디자인 스킬 가이드
 ```
 
 ---
@@ -121,7 +121,7 @@
 
 ## 6. 디자인 방향
 
-> `.claude/skills/frontend-design.md` 가이드라인을 이 프로젝트 맥락에 맞게 구체화
+> `.claude/skills/front-design-guideline.md` 가이드라인을 이 프로젝트 맥락에 맞게 구체화
 
 ### 콘셉트 키워드
 **"영수증처럼 냉정하게, 그러나 감각적으로"** — 소비의 아찔함을 날카롭게 보여주되 시각적으로는 세련된 경험 제공
@@ -200,7 +200,7 @@
 - [ ] 입력값 유효성 검사 (0 이하, 비숫자 입력 차단 + 사용자 안내 메시지)
 
 ### 디자인 완료
-- [ ] `.claude/skills/frontend-design.md` 가이드라인 준수 확인
+- [ ] `.claude/skills/front-design-guideline.md` 가이드라인 준수 확인
 - [ ] 지정 색상 토큰(CSS 변수) 전체 적용
 - [ ] Space Grotesk + Noto Sans KR 폰트 로드 확인
 - [ ] staggered reveal 애니메이션 동작 (카드 6장)
