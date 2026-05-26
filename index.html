@@ -52,11 +52,10 @@
             <div class="amount-input-wrapper">
               <span class="amount-currency" aria-hidden="true">₩</span>
               <input
-                type="number"
+                type="text"
                 id="amount-input"
                 name="amount"
                 placeholder="0"
-                min="1"
                 autocomplete="off"
                 inputmode="numeric"
                 aria-label="금액을 입력하세요 (원)"
@@ -135,6 +134,21 @@
        -------------------------------------------------------- */
     function formatNumber(value) {
       return Number(value).toLocaleString('ko-KR');
+    }
+
+    function getRawAmount() {
+      return amountInput.value.replace(/,/g, '');
+    }
+
+    const DISPLAY_COUNT = 8;
+
+    function shuffledItems() {
+      const arr = [...ITEMS];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr.slice(0, Math.min(DISPLAY_COUNT, arr.length));
     }
 
     /* --------------------------------------------------------
@@ -244,7 +258,7 @@
       hideError();
 
       try {
-        const results = calculate(amount, ITEMS);
+        const results = calculate(amount, shuffledItems());
 
         // Show grid, hide empty state
         emptyState.setAttribute('hidden', '');
@@ -294,13 +308,13 @@
         btn.textContent = formatNumber(entry.amount) + '원';
 
         // Mark active if matches current input
-        const currentVal = Number(amountInput.value);
+        const currentVal = Number(getRawAmount());
         if (currentVal === entry.amount) {
           btn.classList.add('active');
         }
 
         btn.addEventListener('click', () => {
-          amountInput.value = entry.amount;
+          amountInput.value = Number(entry.amount).toLocaleString('ko-KR');
           runCalculation(entry.amount);
         });
 
@@ -350,7 +364,7 @@
 
     // Calculate button
     calculateBtn.addEventListener('click', () => {
-      const amount = amountInput.value;
+      const amount = getRawAmount();
       runCalculation(amount);
     });
 
@@ -361,11 +375,23 @@
       }
     });
 
+    // Comma formatting on input
+    amountInput.addEventListener('input', () => {
+      const raw = amountInput.value.replace(/[^\d]/g, '');
+      if (raw === '') { amountInput.value = ''; return; }
+      const pos = amountInput.selectionStart;
+      const prevLen = amountInput.value.length;
+      const formatted = Number(raw).toLocaleString('ko-KR');
+      amountInput.value = formatted;
+      const delta = formatted.length - prevLen;
+      amountInput.setSelectionRange(pos + delta, pos + delta);
+    });
+
     // Preset buttons
     document.querySelectorAll('.preset-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const amount = Number(btn.dataset.amount);
-        amountInput.value = amount;
+        amountInput.value = amount.toLocaleString('ko-KR');
         runCalculation(amount);
       });
     });
@@ -378,7 +404,7 @@
 
     // Share button
     shareBtn.addEventListener('click', () => {
-      const amount = amountInput.value;
+      const amount = getRawAmount();
       if (!amount || Number(amount) <= 0) {
         showError('공유하려면 먼저 금액을 입력해주세요.');
         return;
@@ -394,13 +420,16 @@
     // Load history on page start
     renderHistory();
 
+    // Update comparison pool count
+    document.querySelector('.input-side-value').textContent = ITEMS.length;
+
     // Handle URL ?amount= parameter
     const urlParams = new URLSearchParams(window.location.search);
     const urlAmount = urlParams.get('amount');
     if (urlAmount) {
       const parsed = Number(urlAmount);
       if (!isNaN(parsed) && parsed > 0) {
-        amountInput.value = parsed;
+        amountInput.value = Number(parsed).toLocaleString('ko-KR');
         runCalculation(parsed);
       }
     }
