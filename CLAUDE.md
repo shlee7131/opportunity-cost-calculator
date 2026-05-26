@@ -66,9 +66,9 @@ function getRawAmount() {
 | `integration-tester` | 정적 분석 기반 검증 → `TEST_REPORT.md` |
 | `price-updater` | `data.js` 가격 최신화 |
 
-`frontend-developer`는 작업 전 `.claude/skills/front-design-guideline.md`를 읽어야 한다.
+`frontend-developer`는 작업 전 `/SKILL` 스킬을 호출해야 한다.
 
 ## 스킬
 
-`.claude/skills/front-design-guideline.md` — 타이포그래피·색상·모션·레이아웃 가이드라인.
-`frontend-developer` 에이전트 및 UI 작업 시 자동 참조.
+`.claude/skills/SKILL.md` (`/SKILL`) — 타이포그래피·색상·모션·레이아웃 가이드라인.
+`frontend-developer` 에이전트 작업 시 호출, `code-reviewer` 에이전트도 디자인 기준 적용 시 참조.
