@@ -1,5 +1,5 @@
 ---
-description: 이 프로젝트의 프론트엔드 디자인 가이드라인. index.html·style.css 작성 또는 수정 시, UI 디자인 방향을 결정할 때, 코드 리뷰에서 디자인 기준을 적용할 때 사용한다.
+description: 이 프로젝트의 프론트엔드 디자인 가이드라인 + 에이전트 생성 공통규칙. index.html·style.css 작성 또는 수정 시, UI 디자인 방향을 결정할 때, 코드 리뷰에서 디자인 기준을 적용할 때, Claude에서 새 에이전트를 생성할 때 사용한다.
 ---
 
 # Frontend Design Guideline
@@ -30,3 +30,29 @@ description: 이 프로젝트의 프론트엔드 디자인 가이드라인. inde
 - generic AI 스타일의 평범한 디자인 금지
 - 예측 가능한 레이아웃 패턴 금지
 - 모든 디자인은 반드시 이 프로젝트 맥락에 맞게 독창적으로 구성
+
+---
+
+## 에이전트 생성 공통규칙
+
+> ⚠️ 이 섹션은 **Claude에서 새 에이전트를 생성할 때만** 참조한다. UI 개발·디자인 작업과는 무관하다.
+
+| 항목 | 값 |
+|------|----|
+| 적용 범위 | Project |
+| 생성 방법 | Generate with Claude |
+| 모델 | Sonnet |
+| 도구 권한 | All tools |
+| 색상 | 에이전트마다 서로 다른 색상 사용 |
+
+### 기존 에이전트 색상 현황
+
+| 에이전트 | 색상 |
+|----------|------|
+| `frontend-developer` | orange |
+| `backend-developer` | green |
+| `code-reviewer` | purple |
+| `integration-tester` | red |
+| `price-updater` | blue |
+
+새 에이전트는 위 목록에 없는 색상(예: yellow, cyan, pink 등)을 사용한다.
