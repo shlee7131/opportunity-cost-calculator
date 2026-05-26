@@ -72,3 +72,7 @@ function getRawAmount() {
 
 `.claude/skills/SKILL.md` (`/SKILL`) — 타이포그래피·색상·모션·레이아웃 가이드라인.
 `frontend-developer` 에이전트 작업 시 호출, `code-reviewer` 에이전트도 디자인 기준 적용 시 참조.
+
+## 에이전트 생성
+
+새 에이전트 생성 요청 시 반드시 `.claude/skills/SKILL.md`의 "에이전트 생성 공통규칙" 섹션을 따른다.
